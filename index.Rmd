@@ -40,3 +40,16 @@ imdb |>
   )
 ```
 
+Agora vamos ver o breakdown desse percentual por ano:
+
+```{r}
+imdb |> 
+  group_by(ano) |> 
+  summarise(
+    percentual = mean(is.na(receita))
+  ) |> 
+  ggplot(aes(x = ano, y = percentual)) +
+  geom_point() + 
+  geom_line()
+```
+
