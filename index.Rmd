@@ -1,8 +1,8 @@
 ---
-title: "index"
-author: "eu"
-date: "2024-02-01"
-output: html_document
+title: "Dashboard de filmes"
+author: "Fernando Corrêa"
+date: "01/02/2024"
+output: flexdashboard::flex_dashboard
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +21,7 @@ Olá, boas vindas! Este documento registra uma análise que fiz da base de dados
 glimpse(imdb)
 ```
 
-## Primeiras análises
+# Primeiras análises
 
 Na visualização anterior podemos perceber que tem muitos valores faltantes (NA) nas colunas de receita. A tabela abaixo ilustra essas quantidades:
 
