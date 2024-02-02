@@ -15,7 +15,7 @@ imdb <- read_csv2("dados/imdb2.csv")
 
 # Introdução
 
-Olá, boas-vindas! Este documento registra uma análise que fiz da base de dados IMDB. Abaixo temos algumas colunas dessa tabela para visualização:
+Boas-vindas! Este documento registra uma análise que fiz da base de dados IMDB. Abaixo temos algumas colunas dessa tabela para visualização:
 
 ```{r}
 glimpse(imdb)
