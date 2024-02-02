@@ -1,0 +1,172 @@
+---
+title: "Dashboard de filmes"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
+
+library(tidyverse)
+library(flexdashboard)
+library(plotly)
+
+imdb <- read_csv2("dados/imdb2.csv") |> 
+  mutate(
+    lucro = receita-orcamento
+  )
+```
+
+Column {data-width=650 .tabset}
+-----------------------------------------------------------------------
+
+### Introdução
+
+Este documento registra uma análise que fiz da base de dados IMDB. Abaixo temos algumas colunas dessa tabela para visualização:
+
+```{r}
+glimpse(imdb)
+```
+
+### Objetivos
+
+Este documento tem dois objetivos:
+
+- Caracterizar os fatores que tornam um filme lucrativo;
+- Explorar a base de dados do IMBD.
+
+### Lucro
+
+Abaixo temos um gráfico de dispersão da receita x orcamento. Pode-se notar que a maior parte dos filmes teve lucro:
+
+```{r}
+grafico_lucro_filmes <- imdb |> 
+  drop_na() |> 
+  mutate(lucrou = ifelse(lucro > 0, "Lucrou", "Deu prejuízo")) |>
+  mutate(
+    lucrou_muito = case_when(
+      lucro/orcamento > 2 ~ "Lucro superior a 2x o orçamento",
+      lucro/orcamento > 1 ~ "Lucro superior 1x o orçamento",
+      lucro/orcamento > 0 ~ "Lucro menor do que o orçamento",
+      lucro/orcamento < 0 ~ "Prejuízo"
+      ) 
+  ) |> 
+  ggplot(aes(x = orcamento, y = receita, color = lucrou, shape = lucrou_muito, label = titulo)) + 
+  geom_point() +
+  theme_bw() +
+  scale_y_continuous(labels = scales::dollar_format(
+    big.mark = ".",
+    decimal.mark = ",",
+    scale = 10^(-9),
+    suffix = "Bi USD", prefix = "$"), breaks = seq(0, 2.5*10^9, 0.5*10^9)) +
+  scale_x_continuous(labels = scales::dollar_format(
+    big.mark = ".",
+    decimal.mark = ",",
+    scale = 10^(-6),
+    suffix = "MM USD", prefix = "$"), breaks = seq(0, 3*10^8, 10^8)) +
+  theme(legend.position = 'bottom') + 
+  labs(x = "Orçamento", y = "Receita")
+
+
+ggplotly(grafico_lucro_filmes)
+```
+
+
+### Filmes mais lucrativos
+
+Os 5 filmes mais lucrativos da história no quesito absoluto são:
+
+```{r}
+imdb |> 
+  arrange(desc(lucro)) |> 
+  select(titulo, lucro) |> 
+  head(5) |> 
+  knitr::kable(
+    col.names = c("Título do filme", "Lucro (USD)")
+  )
+```
+
+Os 5 filmes mais lucrativos da história no quesito relativo são:
+
+```{r}
+imdb |> 
+  mutate(
+    lucro_relativo_ao_orcamento = lucro/orcamento
+  ) |> 
+  arrange(desc(lucro_relativo_ao_orcamento)) |> 
+  select(titulo, orcamento, receita, lucro, lucro_relativo_ao_orcamento) |> 
+  head(5) |> 
+  knitr::kable(
+    col.names = c("Título do filme", "Orçamento (USD)", "Receita (USD)", "Lucro (USD)", "Lucro/Orçamento")
+  )
+```
+
+### Diretores com mais filmes
+
+```{r}
+
+# jeito TR00
+
+# imdb |> 
+#   select(direcao, titulo) |> 
+#   mutate(
+#     direcao = stringr::str_split(direcao , pattern = ", ")
+#   ) |> 
+#   unnest(direcao) |> 
+#   group_by(direcao) |> 
+#   count() |> 
+#   arrange(desc(n)) |> 
+#   head(5)
+
+diretores_separados <- imdb |> 
+  separate(direcao,
+           into = c("diretor", "diretor2"),
+           sep = ", ")
+
+contagem_diretor1 <- diretores_separados |> 
+  count(diretor)
+
+contagem_diretor2 <-  diretores_separados |> 
+  count(diretor = diretor2)
+
+bind_rows(contagem_diretor1, contagem_diretor2) |> 
+  drop_na() |> 
+  group_by(diretor) |> 
+  summarise(n = sum(n)) |> 
+  arrange(desc(n)) |> 
+  head(5) |> 
+  knitr::kable(
+    col.names = c("Diretor", "Número de filmes dirigidos na base")
+  )
+
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Filmes por ano
+
+
+```{r}
+
+grafico_filmes_por_ano <- imdb |> 
+  group_by(ano) |> 
+  summarise(
+    freq = n()
+  ) |> 
+  ggplot(aes(x = ano, y = freq)) + 
+  geom_line()
+
+ggplotly(grafico_filmes_por_ano)
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
