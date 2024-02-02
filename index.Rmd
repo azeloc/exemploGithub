@@ -17,6 +17,7 @@ imdb <- read_csv2("dados/imdb2.csv")
 
 Este documento registra uma análise que fiz da base de dados IMDB. Abaixo temos algumas colunas dessa tabela para visualização:
 
+
 ```{r}
 glimpse(imdb)
 ```
